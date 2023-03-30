@@ -210,7 +210,7 @@ export default function Home(){
        
         
 
-         const res = await fetch(`http://*****************/post/${pageNumber}`,{
+         const res = await fetch(`http://*******######$$$$$$$$/post/${pageNumber}`,{
             method:'POST',
             headers: {'Content-Type': 'multipart/form-data'},            
             body:PdfFormData
