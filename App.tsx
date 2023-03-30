@@ -1,5 +1,6 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import {  StatusBar } from 'expo-status-bar';
+
+import { Platform, SafeAreaView, StyleSheet } from 'react-native';
 import Home from './src/Home';
 import TextRefProvider from './src//TextRefProvider';
 
@@ -8,10 +9,12 @@ import TextRefProvider from './src//TextRefProvider';
 export default function App() {
   return (
     <TextRefProvider>
-     <View style={styles.container} className='bg-red-400'>
+     <SafeAreaView 
+       style={styles.container} 
+       className='bg-red-400'>
       <Home/>
-      <StatusBar style="light" />
-     </View>
+      <StatusBar style="light" backgroundColor='black'/>
+     </SafeAreaView>
     </TextRefProvider>
   );
 }
