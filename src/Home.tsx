@@ -8,10 +8,7 @@ import  RollingText  from 'react-native-rolling-text'
 
 import { TextRefContext } from "./TextRefProvider";
 
-const wq = "Born and raised in New Delhi, Kohli trained in West Delhi Cricket Academy; started his youth career with Delhi Under-15 team. Kohli made his international debut in 2008 and quickly became a key player in the ODI team. He made his Test debut in 2011. In 2013, Kohli reached the number one spot in the ICC rankings for ODI batsmen for the first time. During 2014 T20 World Cup, he set a record for the most runs scored in the tournament. In 2018, he achieved yet another milestone, becoming the world's top-ranked Test batsman, making him the only Indian cricketer to hold the number one spot in all three formats of the game. His form continued"
-let str = "";
-// for(let i = 0;i < 6; i++)
-    str += wq;
+
 
 type AudioButtonName = 'Get Audio' | 'Fetching...';
 type AudioResponse = {
@@ -21,9 +18,9 @@ type AudioResponse = {
 
 
 
-
+const url = 'XXXXXXXXXXXXXXXXXXXXXXX';
 let prevPage = 1;
-
+let isUp = false
 
 export default function Home(){
      
@@ -63,8 +60,7 @@ export default function Home(){
          setTextWords([]);
          WORDS.current = [];
          prevPage = 1;
-        while(textRefArray.length > 0)
-             textRefArray.pop();
+         textRefArray.length = 0
     } 
 
     
@@ -75,6 +71,16 @@ export default function Home(){
         setPlaying(false);
       }else setPlaying(true);
     }
+
+    
+    const handleScroll = () => {
+        isUp = !isUp;
+       if(isUp) 
+         scrollRef.current?.scrollTo({x:0,y:0,animated:true})
+       else scrollRef.current?.scrollToEnd();
+    } 
+
+
 
     useEffect(() => {
        return () => {Speech.stop();} 
@@ -88,7 +94,7 @@ export default function Home(){
           return;
       
        if(!playing){
-         Speech.stop(); //TODO adding pause functionality
+         Speech.stop(); 
          textIndex.current = Math.max(textIndex.current - 2,0);
       }
       
@@ -97,7 +103,9 @@ export default function Home(){
         Speech.speak( 
              text,
         {
-           onStart:() => { pause.current = false; scrollRef.current?.scrollToEnd({animated:true});},
+           onStart:() => { pause.current = false; 
+          if(!isUp)
+            scrollRef.current?.scrollToEnd({animated:true});},
           
            onDone:() => {
            
@@ -129,8 +137,8 @@ export default function Home(){
   useEffect(() => {
     if(textWords.length === 0)
         return;
-     
-     for(let i = 0;i < str.length; i += LIMIT)
+     const N = textWords.length
+     for(let i = 0;i < N; i += LIMIT)
         WORDS.current.push(textWords.slice(i,i + LIMIT).join(" "));
 
        WORDS.current = WORDS.current.filter((word) => word !== "");
@@ -138,27 +146,13 @@ export default function Home(){
          
   },[textWords])
 
- useEffect(() => {
-  
-  return () => {
-          Speech.stop();
-          setPlaying(false)
-          setLimit(LIMIT);
-          index.current = 0;
-          pause.current = false;
-          textIndex.current = 0;
-          setTextWords([]);
-          WORDS.current = [];
-           while(textRefArray.length > 0)
-             textRefArray.pop();
-  }
-
- },[pageNumber])
-
+ 
 
 
      const handleFile = async () => {
-         
+          if(audioButtonContent === 'Fetching...'){
+            return Alert.alert("One pdf is under process, you can't choose another one",undefined,[{text:'Ok'}]);
+          }
           if(PDF && PDF?.type === 'success' && textWords.length > 0) 
           {  
              return Alert.alert("One pdf is already selected press Cancel and select other PDF",undefined,[{text:'Ok'}]);
@@ -205,12 +199,21 @@ export default function Home(){
               }); 
          
           
-          
+          Speech.stop();
+          setPlaying(false)
+          setLimit(LIMIT);
+          index.current = 0;
+          pause.current = false;
+          textIndex.current = 0;
+          setTextWords([]);
+          WORDS.current = [];
+          textRefArray.length = 0;
+          isUp = false;
           setAudioButtonContent('Fetching...');
-       
+          
         
 
-         const res = await fetch(`http://*******######$$$$$$$$/post/${pageNumber}`,{
+         const res = await fetch(`${url}/post/${pageNumber}`,{
             method:'POST',
             headers: {'Content-Type': 'multipart/form-data'},            
             body:PdfFormData
@@ -388,7 +391,7 @@ export default function Home(){
             </Text>
           </TouchableOpacity>
           <Pressable className="ml-5 w-[180px] overflow-hidden"
-             onPress={() => scrollRef.current?.scrollTo({x:0,y:0,animated:true})}
+             onPress={handleScroll}
            >
            <RollingText delay={400} style={{fontSize:35,fontWeight:"bold",overflow:"hidden"}} durationMsPerWidth={10} startDelay={10} >
                {PDF?.type === 'success' ? PDF.name : 'No Name'}
